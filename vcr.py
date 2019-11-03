@@ -404,8 +404,8 @@ class VCRLoader(torch.utils.data.DataLoader):
 '''
 Dataloader_Check_Done
 '''
-if __name__ == '__main__':
-    train, val, test = VCR.splits()
-    for i in range(len(train)):
-        res = train[i]
-        print("done with {}".format(i))
+#if __name__ == '__main__':
+#    train, val, test = VCR.splits()
+#    for i in range(len(train)):
+#        res = train[i]
+#        print("done with {}".format(i))
