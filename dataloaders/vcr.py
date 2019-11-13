@@ -14,9 +14,9 @@ from allennlp.data.tokenizers import Token
 from allennlp.data.vocabulary import Vocabulary
 from allennlp.nn.util import get_text_field_mask
 from torch.utils.data import Dataset
-from box_utils import load_image, resize_image, to_tensor_and_normalize
-from mask_utils import make_mask
-from bert_field import BertField
+from dataloaders.box_utils import load_image, resize_image, to_tensor_and_normalize
+from dataloaders.mask_utils import make_mask
+from dataloaders.bert_field import BertField
 import h5py
 from copy import deepcopy
 from config import VCR_IMAGES_DIR, VCR_ANNOTS_DIR
@@ -24,82 +24,44 @@ from config import VCR_IMAGES_DIR, VCR_ANNOTS_DIR
 GENDER_NEUTRAL_NAMES = ['Casey', 'Riley', 'Jessie', 'Jackie', 'Avery', 'Jaime', 'Peyton', 'Kerry', 'Jody', 'Kendall',
                         'Peyton', 'Skyler', 'Frankie', 'Pat', 'Quinn']
 
-'''
-Here's an example jsonl
-{
-"movie": "3015_CHARLIE_ST_CLOUD",
-"objects": ["person", "person", "person", "car"],
-"interesting_scores": [0],
-"answer_likelihood": "possible",
-"img_fn": "lsmdc_3015_CHARLIE_ST_CLOUD/3015_CHARLIE_ST_CLOUD_00.23.57.935-00.24.00.783@0.jpg",
-"metadata_fn": "lsmdc_3015_CHARLIE_ST_CLOUD/3015_CHARLIE_ST_CLOUD_00.23.57.935-00.24.00.783@0.json",
-"answer_orig": "No she does not",
-"question_orig": "Does 3 feel comfortable?",
-"rationale_orig": "She is standing with her arms crossed and looks disturbed",
-"question": ["Does", [2], "feel", "comfortable", "?"],
-"answer_match_iter": [3, 0, 2, 1],
-"answer_sources": [3287, 0, 10184, 2260],
-"answer_choices": [
-    ["Yes", "because", "the", "person", "sitting", "next", "to", "her", "is", "smiling", "."],
-    ["No", "she", "does", "not", "."],
-    ["Yes", ",", "she", "is", "wearing", "something", "with", "thin", "straps", "."],
-    ["Yes", ",", "she", "is", "cold", "."]],
-"answer_label": 1,
-"rationale_choices": [
-    ["There", "is", "snow", "on", "the", "ground", ",", "and",
-        "she", "is", "wearing", "a", "coat", "and", "hate", "."],
-    ["She", "is", "standing", "with", "her", "arms", "crossed", "and", "looks", "disturbed", "."],
-    ["She", "is", "sitting", "very", "rigidly", "and", "tensely", "on", "the", "edge", "of", "the",
-        "bed", ".", "her", "posture", "is", "not", "relaxed", "and", "her", "face", "looks", "serious", "."],
-    [[2], "is", "laying", "in", "bed", "but", "not", "sleeping", ".",
-        "she", "looks", "sad", "and", "is", "curled", "into", "a", "ball", "."]],
-"rationale_sources": [1921, 0, 9750, 25743],
-"rationale_match_iter": [3, 0, 2, 1],
-"rationale_label": 1,
-"img_id": "train-0",
-"question_number": 0,
-"annot_id": "train-0",
-"match_fold": "train-0",
-"match_index": 0,
-}
-'''
-tmp = {
-"movie": "3015_CHARLIE_ST_CLOUD",
-"objects": ["person", "person", "person", "car"],
-"interesting_scores": [0],
-"answer_likelihood": "possible",
-"img_fn": "lsmdc_3015_CHARLIE_ST_CLOUD/3015_CHARLIE_ST_CLOUD_00.23.57.935-00.24.00.783@0.jpg",
-"metadata_fn": "lsmdc_3015_CHARLIE_ST_CLOUD/3015_CHARLIE_ST_CLOUD_00.23.57.935-00.24.00.783@0.json",
-"answer_orig": "No she does not",
-"question_orig": "Does 3 feel comfortable?",
-"rationale_orig": "She is standing with her arms crossed and looks disturbed",
-"question": ["Does", [2], "feel", "comfortable", "?"],
-"answer_match_iter": [3, 0, 2, 1],
-"answer_sources": [3287, 0, 10184, 2260],
-"answer_choices": [
-    ["Yes", "because", "the", "person", "sitting", "next", "to", "her", "is", "smiling", "."],
-    ["No", "she", "does", "not", "."],
-    ["Yes", ",", "she", "is", "wearing", "something", "with", "thin", "straps", "."],
-    ["Yes", ",", "she", "is", "cold", "."]],
-"answer_label": 1,
-"rationale_choices": [
-    ["There", "is", "snow", "on", "the", "ground", ",", "and",
-        "she", "is", "wearing", "a", "coat", "and", "hate", "."],
-    ["She", "is", "standing", "with", "her", "arms", "crossed", "and", "looks", "disturbed", "."],
-    ["She", "is", "sitting", "very", "rigidly", "and", "tensely", "on", "the", "edge", "of", "the",
-        "bed", ".", "her", "posture", "is", "not", "relaxed", "and", "her", "face", "looks", "serious", "."],
-    [[2], "is", "laying", "in", "bed", "but", "not", "sleeping", ".",
-        "she", "looks", "sad", "and", "is", "curled", "into", "a", "ball", "."]],
-"rationale_sources": [1921, 0, 9750, 25743],
-"rationale_match_iter": [3, 0, 2, 1],
-"rationale_label": 1,
-"img_id": "train-0",
-"question_number": 0,
-"annot_id": "train-0",
-"match_fold": "train-0",
-"match_index": 0,
-}
 
+# Here's an example jsonl
+# {
+# "movie": "3015_CHARLIE_ST_CLOUD",
+# "objects": ["person", "person", "person", "car"],
+# "interesting_scores": [0],
+# "answer_likelihood": "possible",
+# "img_fn": "lsmdc_3015_CHARLIE_ST_CLOUD/3015_CHARLIE_ST_CLOUD_00.23.57.935-00.24.00.783@0.jpg",
+# "metadata_fn": "lsmdc_3015_CHARLIE_ST_CLOUD/3015_CHARLIE_ST_CLOUD_00.23.57.935-00.24.00.783@0.json",
+# "answer_orig": "No she does not",
+# "question_orig": "Does 3 feel comfortable?",
+# "rationale_orig": "She is standing with her arms crossed and looks disturbed",
+# "question": ["Does", [2], "feel", "comfortable", "?"],
+# "answer_match_iter": [3, 0, 2, 1],
+# "answer_sources": [3287, 0, 10184, 2260],
+# "answer_choices": [
+#     ["Yes", "because", "the", "person", "sitting", "next", "to", "her", "is", "smiling", "."],
+#     ["No", "she", "does", "not", "."],
+#     ["Yes", ",", "she", "is", "wearing", "something", "with", "thin", "straps", "."],
+#     ["Yes", ",", "she", "is", "cold", "."]],
+# "answer_label": 1,
+# "rationale_choices": [
+#     ["There", "is", "snow", "on", "the", "ground", ",", "and",
+#         "she", "is", "wearing", "a", "coat", "and", "hate", "."],
+#     ["She", "is", "standing", "with", "her", "arms", "crossed", "and", "looks", "disturbed", "."],
+#     ["She", "is", "sitting", "very", "rigidly", "and", "tensely", "on", "the", "edge", "of", "the",
+#         "bed", ".", "her", "posture", "is", "not", "relaxed", "and", "her", "face", "looks", "serious", "."],
+#     [[2], "is", "laying", "in", "bed", "but", "not", "sleeping", ".",
+#         "she", "looks", "sad", "and", "is", "curled", "into", "a", "ball", "."]],
+# "rationale_sources": [1921, 0, 9750, 25743],
+# "rationale_match_iter": [3, 0, 2, 1],
+# "rationale_label": 1,
+# "img_id": "train-0",
+# "question_number": 0,
+# "annot_id": "train-0",
+# "match_fold": "train-0",
+# "match_index": 0,
+# }
 
 def _fix_tokenization(tokenized_sent, bert_embs, old_det_to_new_ind, obj_to_type, token_indexers, pad_ind=-1):
     """
@@ -369,7 +331,7 @@ def collate_fn(data, to_gpu=False):
     #         if k != 'metadata':
     #             td[k] = {k2: v.cuda(non_blocking=True) for k2, v in td[k].items()} if isinstance(td[k], dict) else td[k].cuda(
     #             non_blocking=True)
-
+ 
     # # No nested dicts
     # for k in sorted(td.keys()):
     #     if isinstance(td[k], dict):
@@ -400,12 +362,9 @@ class VCRLoader(torch.utils.data.DataLoader):
         )
         return loader
 
-#You could use this for debugging maybe
-'''
-Dataloader_Check_Done
-'''
-#if __name__ == '__main__':
-#    train, val, test = VCR.splits()
-#    for i in range(len(train)):
-#        res = train[i]
-#        print("done with {}".format(i))
+# You could use this for debugging maybe
+# if __name__ == '__main__':
+#     train, val, test = VCR.splits()
+#     for i in range(len(train)):
+#         res = train[i]
+#         print("done with {}".format(i))

@@ -13,14 +13,14 @@ from allennlp.nn.util import device_mapping
 from torch.nn import DataParallel
 from torch.nn.modules import BatchNorm2d
 
-from vcr import VCR, VCRLoader
-from pytorch_misc import time_batch
+from dataloaders.vcr import VCR, VCRLoader
+from utils.pytorch_misc import time_batch
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s - %(message)s', level=logging.DEBUG)
 
 # This is needed to make the imports work
 from allennlp.models import Model
-#import models
+import models
 
 
 #################################

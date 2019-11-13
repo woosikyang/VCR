@@ -16,8 +16,8 @@ from torch.nn import DataParallel
 from torch.nn.modules import BatchNorm2d
 from tqdm import tqdm
 
-from vcr import VCR, VCRLoader
-from pytorch_misc import time_batch, save_checkpoint, clip_grad_norm, \
+from dataloaders.vcr import VCR, VCRLoader
+from utils.pytorch_misc import time_batch, save_checkpoint, clip_grad_norm, \
     restore_checkpoint, print_para, restore_best_checkpoint
 
 import logging
@@ -25,7 +25,7 @@ logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s - %(message)s
 
 # This is needed to make the imports work
 from allennlp.models import Model
-#import models
+import models
 
 #################################
 #################################

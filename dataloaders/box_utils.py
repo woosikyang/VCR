@@ -8,10 +8,20 @@ from torchvision.transforms import functional
 from config import USE_IMAGENET_PRETRAINED
 
 
-
-def load_image(img_fn)  :
+##### Image
+def load_image(img_fn):
+    """Load the specified image and return a [H,W,3] Numpy array.
+    """
     return default_loader(img_fn)
-
+    # # Load image
+    # image = skimage.io.imread(img_fn)
+    # # If grayscale. Convert to RGB for consistency.
+    # if image.ndim != 3:
+    #     image = skimage.color.gray2rgb(image)
+    # # If has an alpha channel, remove it for consistency
+    # if image.shape[-1] == 4:
+    #     image = image[..., :3]
+    # return image
 
 
 # Let's do 16x9

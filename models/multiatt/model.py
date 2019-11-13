@@ -12,7 +12,7 @@ from allennlp.models.model import Model
 from allennlp.modules import TextFieldEmbedder, Seq2SeqEncoder, FeedForward, InputVariationalDropout, TimeDistributed
 from allennlp.training.metrics import CategoricalAccuracy
 from allennlp.modules.matrix_attention import BilinearMatrixAttention
-from detector import SimpleDetector
+from utils.detector import SimpleDetector
 from allennlp.nn.util import masked_softmax, weighted_sum, replace_masked_values
 from allennlp.nn import InitializerApplicator
 
