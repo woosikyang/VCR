@@ -1,6 +1,7 @@
 """
 Evaluation script for the leaderboard
 """
+
 import argparse
 import logging
 import multiprocessing
@@ -78,11 +79,12 @@ def _to_gpu(td):
             async=True)
     return td
 
-def _to_gpu2(td):
+def _to_gpu4(td):
+    del td['metadata']
     for k in td:
-        print(type(k))
-        print(type(td[k]))
-        td[k] = {k2: torch.tensor(v).cuda() for k2, v in td[k].items()} if isinstance(td[k], dict) else td[k].cuda()
+        td[k] = {k2: torch.tensor(v).cuda(async=True) for k2, v in td[k].items()} if isinstance(td[k], dict) else (
+        td[k]).cuda(
+            async=True)
     return td
 
 
@@ -119,12 +121,13 @@ for (vcr_dataset, mode_long) in zip(vcr_modes, ['answer'] + [f'rationale_{i}' fo
         with torch.no_grad():
             #print(type(batch))
 
+            meta = batch['metadata']
             #batch = _to_gpu2(batch)
-            #batch = _to_gpu(batch)
+            batch = _to_gpu4(batch)
 
             output_dict = model(**batch)
             test_probs.append(output_dict['label_probs'].detach().cpu().numpy())
-            test_ids += [m['annot_id'] for m in batch['metadata']]
+            test_ids += [m['annot_id'] for m in meta]
         if (b > 0) and (b % 10 == 0):
             print("Completed {}/{} batches in {:.3f}s".format(b, len(test_loader), time_per_batch * 10), flush=True)
 

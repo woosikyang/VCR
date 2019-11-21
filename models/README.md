@@ -22,7 +22,9 @@ You can combine the validation predictions using
 
 ## Submitting to the leadrboard(from VCR origininal github)
 
-VCR features a [leaderboard](https://visualcommonsense.com/leaderboard/) where you can submit your answers on the test set. Submitting to the leaderboard is easy! You'll need to submit something like [the example submission CSV file](https://s3-us-west-2.amazonaws.com/ai2-rowanz/r2c/example-submission.csv). You can use the `eval_for_leaderboard.py` script, which formats everything in the right way.
+VCR features a [leaderboard](https://visualcommonsense.com/leaderboard/) where you can submit your answers on the test set. Submitting to the leaderboard is easy! You'll need to submit something like [the example submission CSV file](https://s3-us-west-2.amazonaws.com/ai2-rowanz/r2c/example-submission.csv). You can use the `python models/eval_for_leaderboard.py` script, which formats everything in the right way.
+
+I changed a little for handling 'metadata' values
 
 Essentially, your submission has to have the following columns:
 
